@@ -34,3 +34,7 @@ if file:
 
     st.dataframe(df)
     st.success("Thank you for using the Contract Renewal Prediction app! 😊")
+    st.info("If you have any questions or feedback, please add comments below.")
+    comment = st.text_area("Add comments or queries")
+    if comment:
+        st.write("Thanks for your input! We will review your comment:", comment)
