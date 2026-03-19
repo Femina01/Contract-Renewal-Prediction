@@ -36,3 +36,6 @@ You are solving:
 * Suggest discount based on probability
 
 ---
+## APP LINK
+
+https://contract-renewal-prediction-lldythvzrxiuz8dcuynqdz.streamlit.app/
