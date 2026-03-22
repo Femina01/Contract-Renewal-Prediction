@@ -80,4 +80,4 @@ clean_df = pd.DataFrame(output_list)
 st.subheader("📊 Clean Prediction Output")
 st.dataframe(clean_df)
 
-    st.success("Thank you for using the Contract Renewal Prediction app! 😊")
+st.success("Thank you for using the Contract Renewal Prediction app! 😊")
