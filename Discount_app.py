@@ -100,9 +100,6 @@ if file:
         mime="text/csv"
     )
 # 3. Suggested Discount Analysis
-st.write("### Suggested Discount Distribution")
-st.bar_chart(clean_df["Suggested_Discount (%)"])
-
 st.write("### 📌 Key Metrics")
 
 col1, col2, col3 = st.columns(3)
