@@ -110,3 +110,4 @@ col3.metric("Low Renewal", (clean_df["Renewal_Probability"] <= 0.8).sum())
 
 
 st.success("🎉 Thank you for using the Contract Renewal Prediction App!")
+st.success("Femina Auxilia F")
