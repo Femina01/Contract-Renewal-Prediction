@@ -80,10 +80,4 @@ clean_df = pd.DataFrame(output_list)
 st.subheader("📊 Clean Prediction Output")
 st.dataframe(clean_df)
 
-for i in range(len(clean_df)):
-    if clean_df.loc[i, "Renewal_Probability"] > 0.8:
-        st.success(f"{clean_df.loc[i, 'Customer_ID']} → High chance of renewal ✅")
-    else:
-        st.warning(f"{clean_df.loc[i, 'Customer_ID']} → Low chance of renewal ⚠️")
-
     st.success("Thank you for using the Contract Renewal Prediction app! 😊")
