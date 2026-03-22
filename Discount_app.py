@@ -99,15 +99,32 @@ if file:
         file_name="renewal_predictions.csv",
         mime="text/csv"
     )
-# 3. Suggested Discount Analysis
-st.write("### 📌 Key Metrics")
 
-col1, col2, col3 = st.columns(3)
+    # ==============================
+    # Key Metrics
+    # ==============================
+    st.write("### 📌 Key Metrics")
 
-col1.metric("Total Customers", len(clean_df))
-col2.metric("High Renewal", (clean_df["Renewal_Probability"] > 0.8).sum())
-col3.metric("Low Renewal", (clean_df["Renewal_Probability"] <= 0.8).sum())
+    col1, col2, col3 = st.columns(3)
 
+    col1.metric("Total Customers", len(clean_df))
+    col2.metric("High Renewal", (clean_df["Renewal_Probability"] > 0.8).sum())
+    col3.metric("Low Renewal", (clean_df["Renewal_Probability"] <= 0.8).sum())
 
-st.success("🎉 Thank you for using the Contract Renewal Prediction App!")
-st.success("Femina Auxilia F")
+    # ==============================
+    # Insights
+    # ==============================
+    st.subheader("📈 Insights")
+
+    for i in range(len(clean_df)):
+        cust = clean_df.loc[i, "Customer_ID"]
+        prob = clean_df.loc[i, "Renewal_Probability"]
+        discount = clean_df.loc[i, "Suggested_Discount (%)"]
+
+        if prob > 0.8:
+            st.success(f"✅ {cust} → High chance of renewal ({prob}) | Give low discount ({discount}%)")
+        else:
+            st.warning(f"⚠️ {cust} → Risk of churn ({prob}) | Consider higher discount ({discount}%)")
+
+    st.success("🎉 Thank you for using the Contract Renewal Prediction App!")
+    st.success("Femi Auxi")
