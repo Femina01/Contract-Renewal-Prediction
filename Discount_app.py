@@ -2,32 +2,30 @@ import streamlit as st
 import pandas as pd
 import pickle
 
-def decode_one_hot(row, prefix):
-    for col in row.index:
-        if col.startswith(prefix) and row[col] == 1:
-            return col.replace(prefix, "")
-    return "Unknown"
-
-
+# Load model and features
 model = pickle.load(open("model.pkl", "rb"))
 features = pickle.load(open("features.pkl", "rb"))
 
-st.title("Contract Renewal Prediction")
+# App title
+st.title("📊 Contract Renewal Prediction App")
 
-file = st.file_uploader("Upload CSV")
+# File upload
+file = st.file_uploader("📂 Upload your CSV file", type=["csv"])
 
 if file:
     df = pd.read_csv(file)
 
-    # Validate columns
+    # Validate required columns
     required_cols = ["Contract_Start", "Contract_End", "Last_Year_Discount", "Previous_Contracts"]
 
     for col in required_cols:
         if col not in df.columns:
-            st.error(f"Missing column: {col}")
+            st.error(f"❌ Missing column: {col}")
             st.stop()
 
+    # ==============================
     # Feature Engineering
+    # ==============================
     df["Contract_Start"] = pd.to_datetime(df["Contract_Start"])
     df["Contract_End"] = pd.to_datetime(df["Contract_End"])
 
@@ -37,48 +35,80 @@ if file:
     df["High_Discount"] = (df["Last_Year_Discount"] > 15).astype(int)
     df["Loyal_Customer"] = (df["Previous_Contracts"] >= 3).astype(int)
 
+    # Drop date columns
     df = df.drop(["Contract_Start", "Contract_End"], axis=1)
+
+    # Save original data for display
     original_df = df.copy()
 
+    # ==============================
     # Encoding
-    df = pd.get_dummies(df)
-    df = df.reindex(columns=features, fill_value=0)
+    # ==============================
+    df_encoded = pd.get_dummies(df)
+    df_encoded = df_encoded.reindex(columns=features, fill_value=0)
 
+    # ==============================
     # Prediction
-    prob = model.predict_proba(df)[:, 1]
+    # ==============================
+    prob = model.predict_proba(df_encoded)[:, 1]
 
-    df["Renewal_Probability"] = prob
-df["Suggested_Discount"] = (1 - prob) * 20
+    df_encoded["Renewal_Probability"] = prob
+    df_encoded["Suggested_Discount"] = (1 - prob) * 20
 
-# Create user-friendly output
-output_list = []
+    # ==============================
+    # Create Clean Output
+    # ==============================
+    output_list = []
 
-for i in range(len(df)):
-    row = df.iloc[i]
+    for i in range(len(df_encoded)):
+        row_encoded = df_encoded.iloc[i]
+        row_original = original_df.iloc[i]
 
-    customer_id = decode_one_hot(row, "Customer_ID_")
-    serial_no = decode_one_hot(row, "Serial_No_")
-    product_type = decode_one_hot(row, "Product_Type_")
-    contract_status = decode_one_hot(row, "Contract_Status_")
-    support_package = decode_one_hot(row, "Support_Package_")
-    warranty = decode_one_hot(row, "Warranty_")
+        output_list.append({
+            "Customer_ID": row_original.get("Customer_ID", "N/A"),
+            "Serial_No": row_original.get("Serial_No", "N/A"),
+            "Product_Type": row_original.get("Product_Type", "N/A"),
+            "Contract_Status": row_original.get("Contract_Status", "N/A"),
+            "Support_Package": row_original.get("Support_Package", "N/A"),
+            "Warranty": row_original.get("Warranty", "N/A"),
+            "Last_Year_Discount": row_original.get("Last_Year_Discount", "N/A"),
+            "Previous_Contracts": row_original.get("Previous_Contracts", "N/A"),
+            "Contract_Duration": row_original.get("Contract_Duration", "N/A"),
+            "Is_Long_Contract": row_original.get("Is_Long_Contract", "N/A"),
+            "High_Discount": row_original.get("High_Discount", "N/A"),
+            "Loyal_Customer": row_original.get("Loyal_Customer", "N/A"),
+            "Renewal_Probability": round(row_encoded["Renewal_Probability"], 2),
+            "Suggested_Discount (%)": round(row_encoded["Suggested_Discount"], 2)
+        })
 
-    output_list.append({
-        "Customer_ID": customer_id,
-        "Serial_No": serial_no,
-        "Product_Type": product_type,
-        "Contract_Status": contract_status,
-        "Support_Package": support_package,
-        "Warranty": warranty,
-        "Renewal_Probability": round(row["Renewal_Probability"], 2),
-        "Suggested_Discount (%)": round(row["Suggested_Discount"], 2)
-    })
+    clean_df = pd.DataFrame(output_list)
 
-# Convert to DataFrame
-clean_df = pd.DataFrame(output_list)
+    # ==============================
+    # Display Output
+    # ==============================
+    st.subheader("📊 Clean Prediction Output")
+    st.dataframe(clean_df)
 
-# Show clean output
-st.subheader("📊 Clean Prediction Output")
-st.dataframe(clean_df)
+    # ==============================
+    # Download Option
+    # ==============================
+    csv = clean_df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="⬇️ Download Results as CSV",
+        data=csv,
+        file_name="renewal_predictions.csv",
+        mime="text/csv"
+    )
 
-st.success("Thank you for using the Contract Renewal Prediction app! 😊")
+    # ==============================
+    # Insights
+    # ==============================
+    st.subheader("📈 Insights")
+
+    for i in range(len(clean_df)):
+        if clean_df.loc[i, "Renewal_Probability"] > 0.8:
+            st.success(f"✅ {clean_df.loc[i, 'Customer_ID']} → High chance of renewal")
+        else:
+            st.warning(f"⚠️ {clean_df.loc[i, 'Customer_ID']} → Low chance of renewal")
+
+    st.success("🎉 Thank you for using the Contract Renewal Prediction App!")
