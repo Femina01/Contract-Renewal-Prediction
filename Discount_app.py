@@ -38,6 +38,7 @@ if file:
     df["Loyal_Customer"] = (df["Previous_Contracts"] >= 3).astype(int)
 
     df = df.drop(["Contract_Start", "Contract_End"], axis=1)
+    original_df = df.copy()
 
     # Encoding
     df = pd.get_dummies(df)
