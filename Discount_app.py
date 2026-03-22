@@ -2,6 +2,13 @@ import streamlit as st
 import pandas as pd
 import pickle
 
+def decode_one_hot(row, prefix):
+    for col in row.index:
+        if col.startswith(prefix) and row[col] == 1:
+            return col.replace(prefix, "")
+    return "Unknown"
+
+
 model = pickle.load(open("model.pkl", "rb"))
 features = pickle.load(open("features.pkl", "rb"))
 
@@ -40,7 +47,43 @@ if file:
     prob = model.predict_proba(df)[:, 1]
 
     df["Renewal_Probability"] = prob
-    df["Suggested_Discount"] = (1 - prob) * 20
+df["Suggested_Discount"] = (1 - prob) * 20
 
-    st.dataframe(df)
+# Create user-friendly output
+output_list = []
+
+for i in range(len(df)):
+    row = df.iloc[i]
+
+    customer_id = decode_one_hot(row, "Customer_ID_")
+    serial_no = decode_one_hot(row, "Serial_No_")
+    product_type = decode_one_hot(row, "Product_Type_")
+    contract_status = decode_one_hot(row, "Contract_Status_")
+    support_package = decode_one_hot(row, "Support_Package_")
+    warranty = decode_one_hot(row, "Warranty_")
+
+    output_list.append({
+        "Customer_ID": customer_id,
+        "Serial_No": serial_no,
+        "Product_Type": product_type,
+        "Contract_Status": contract_status,
+        "Support_Package": support_package,
+        "Warranty": warranty,
+        "Renewal_Probability": round(row["Renewal_Probability"], 2),
+        "Suggested_Discount (%)": round(row["Suggested_Discount"], 2)
+    })
+
+# Convert to DataFrame
+clean_df = pd.DataFrame(output_list)
+
+# Show clean output
+st.subheader("📊 Clean Prediction Output")
+st.dataframe(clean_df)
+
+for i in range(len(clean_df)):
+    if clean_df.loc[i, "Renewal_Probability"] > 0.8:
+        st.success(f"{clean_df.loc[i, 'Customer_ID']} → High chance of renewal ✅")
+    else:
+        st.warning(f"{clean_df.loc[i, 'Customer_ID']} → Low chance of renewal ⚠️")
+
     st.success("Thank you for using the Contract Renewal Prediction app! 😊")
