@@ -86,7 +86,7 @@ if file:
     # ==============================
     # Display Output
     # ==============================
-    st.subheader("📊 Clean Prediction Output")
+    st.subheader("📊 Prediction Output")
     st.dataframe(clean_df)
 
     # ==============================
