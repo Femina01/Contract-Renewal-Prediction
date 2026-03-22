@@ -110,5 +110,36 @@ if file:
             st.success(f"✅ {clean_df.loc[i, 'Customer_ID']} → High chance of renewal")
         else:
             st.warning(f"⚠️ {clean_df.loc[i, 'Customer_ID']} → Low chance of renewal")
+    # ==============================
+# Charts / Visualization
+# ==============================
+st.subheader("📊 Visual Insights")
+
+# 1. Renewal Probability Distribution
+st.write("### Renewal Probability Distribution")
+st.bar_chart(clean_df["Renewal_Probability"])
+
+# 2. High vs Low Renewal Count
+st.write("### High vs Low Renewal Customers")
+
+clean_df["Renewal_Status"] = clean_df["Renewal_Probability"].apply(
+    lambda x: "High" if x > 0.8 else "Low"
+)
+
+status_count = clean_df["Renewal_Status"].value_counts()
+st.bar_chart(status_count)
+
+# 3. Suggested Discount Analysis
+st.write("### Suggested Discount Distribution")
+st.bar_chart(clean_df["Suggested_Discount (%)"])
+
+st.write("### 📌 Key Metrics")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("Total Customers", len(clean_df))
+col2.metric("High Renewal", (clean_df["Renewal_Probability"] > 0.8).sum())
+col3.metric("Low Renewal", (clean_df["Renewal_Probability"] <= 0.8).sum())
+
 
     st.success("🎉 Thank you for using the Contract Renewal Prediction App!")
