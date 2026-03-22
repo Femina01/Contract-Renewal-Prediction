@@ -7,7 +7,7 @@ model = pickle.load(open("model.pkl", "rb"))
 features = pickle.load(open("features.pkl", "rb"))
 
 # App title
-st.title("📊 Contract Renewal Prediction App")
+st.title("📊 Renewal Prediction With Discount App")
 
 # File upload
 file = st.file_uploader("📂 Upload your CSV file", type=["csv"])
